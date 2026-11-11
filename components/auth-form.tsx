@@ -3,6 +3,12 @@
 import Link from "next/link"
 import type { FormEvent } from "react"
 
+export type AuthFormData = {
+  name?: string
+  email: string
+  password: string
+}
+
 type Mode = "sign-in" | "sign-up"
 
 const inputClasses =
@@ -10,12 +16,18 @@ const inputClasses =
 
 const labelClasses = "mb-1.5 block text-sm text-white/70"
 
-function submit(mode: Mode, event: FormEvent<HTMLFormElement>) {
+function submit(
+  mode: Mode,
+  event: FormEvent<HTMLFormElement>,
+  onSubmit?: (data: AuthFormData) => void | Promise<void>
+) {
   event.preventDefault()
-  const data = Object.fromEntries(new FormData(event.currentTarget))
+  const data = Object.fromEntries(
+    new FormData(event.currentTarget)
+  ) as AuthFormData
 
-  // TODO: integrate with lib/auth (e.g. authClient.signIn.email / signUp.email)
   console.log(`[${mode}] form data:`, data)
+  onSubmit?.(data)
 }
 
 function ModeToggle({ mode }: { mode: Mode }) {
@@ -44,7 +56,13 @@ function ModeToggle({ mode }: { mode: Mode }) {
   )
 }
 
-export function AuthForm({ mode }: { mode: Mode }) {
+export function AuthForm({
+  mode,
+  onSubmit,
+}: {
+  mode: Mode
+  onSubmit?: (data: AuthFormData) => void | Promise<void>
+}) {
   const isSignIn = mode === "sign-in"
 
   return (
@@ -61,7 +79,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
       </p>
 
       <form
-        onSubmit={(e) => submit(mode, e)}
+        onSubmit={(e) => submit(mode, e, onSubmit)}
         className="mt-8 flex flex-col gap-5"
       >
         {!isSignIn && (
