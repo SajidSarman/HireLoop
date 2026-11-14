@@ -13,10 +13,31 @@ export const auth = betterAuth({
     user: {
        additionalFields: {
           role: {
-              type: ['seeker', 'recruiter', 'admin'],
-              input: false
-            } 
+              // better-auth field types are primitives ("string" | "number" | ...).
+              // Allowed values are validated in databaseHooks below.
+              type: "string",
+              // allow clients to set the role during sign-up
+              input: true,
+              defaultValue: "seeker",
+            }
         }
+    },
+    databaseHooks: {
+        user: {
+            create: {
+                before: async (user) => {
+                    const allowedRoles = ["seeker", "recruiter", "admin"];
+                    return {
+                        data: {
+                            ...user,
+                            role: allowedRoles.includes(user.role as string)
+                                ? user.role
+                                : "seeker",
+                        },
+                    };
+                },
+            },
+        },
     },
     socialProviders: {
         google: { 

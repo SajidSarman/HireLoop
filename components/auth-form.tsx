@@ -1,12 +1,16 @@
 "use client"
 
 import Link from "next/link"
+import { useState } from "react"
 import type { FormEvent } from "react"
+
+export type Role = "seeker" | "recruiter" | "admin"
 
 export type AuthFormData = {
   name?: string
   email: string
   password: string
+  role?: Role
 }
 
 type Mode = "sign-in" | "sign-up"
@@ -28,6 +32,44 @@ function submit(
 
   console.log(`[${mode}] form data:`, data)
   onSubmit?.(data)
+}
+
+function RolePicker({
+  value,
+  onChange,
+}: {
+  value: Role
+  onChange: (role: Role) => void
+}) {
+  const options: Array<[Role, string]> = [
+    ["seeker", "Job Seeker"],
+    ["recruiter", "Recruiter"],
+    ["admin", "Admin"],
+  ]
+
+  return (
+    <div>
+      <label className={labelClasses}>I am joining as</label>
+      <div className="grid grid-cols-3 gap-1 rounded-xl border border-white/10 bg-[#101010] p-1">
+        {options.map(([role, label]) => (
+          <button
+            key={role}
+            type="button"
+            onClick={() => onChange(role)}
+            aria-pressed={value === role}
+            className={
+              value === role
+                ? "rounded-lg bg-[#5c53fe] py-2 text-sm font-medium text-white"
+                : "rounded-lg py-2 text-sm text-white/70 transition-colors hover:text-white"
+            }
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+      <input type="hidden" name="role" value={value} />
+    </div>
+  )
 }
 
 function ModeToggle({ mode }: { mode: Mode }) {
@@ -64,6 +106,7 @@ export function AuthForm({
   onSubmit?: (data: AuthFormData) => void | Promise<void>
 }) {
   const isSignIn = mode === "sign-in"
+  const [role, setRole] = useState<Role>("seeker")
 
   return (
     <div className="w-full max-w-[420px] rounded-3xl border border-white/10 bg-[#0a0a0a] p-6 shadow-2xl sm:p-8">
@@ -82,6 +125,10 @@ export function AuthForm({
         onSubmit={(e) => submit(mode, e, onSubmit)}
         className="mt-8 flex flex-col gap-5"
       >
+        {!isSignIn && (
+          <RolePicker value={role} onChange={setRole} />
+        )}
+
         {!isSignIn && (
           <div>
             <label htmlFor="auth-name" className={labelClasses}>

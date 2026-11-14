@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { cn } from "cn"
 
 import Logo from "@/app/images/logo.png"
+import { signOut, useSession } from "@/lib/auth-client"
 
 const navLinks = [
   { href: "/jobs", label: "Browse Jobs" },
@@ -20,6 +21,13 @@ const navLinks = [
 export function SiteNavbar({ className }: { className?: string }) {
   const [open, setOpen] = useState(false)
   const pathname = usePathname()
+  const { data: session } = useSession()
+
+  console.log("session in navbar:", session)
+
+  const handleSignOut = async () => {
+    await signOut()
+  }
 
   return (
     <header
@@ -62,19 +70,32 @@ export function SiteNavbar({ className }: { className?: string }) {
             <span aria-hidden className="h-6 w-px bg-[#a8a8a8]/50" />
 
             <div className="flex items-center gap-4">
-              <Link
-                href="/sign-in"
-                className="inline-flex h-12 items-center justify-center rounded-xl bg-white px-6 text-[17px] font-semibold text-[#5c53fe] transition-colors hover:bg-white/85"
-              >
-                Sign In
-              </Link>
-              <Link
-                href="/sign-up"
-                className="inline-flex h-12 items-center justify-center rounded-xl bg-[#5c53fe] px-6 text-[17px] font-semibold text-white transition-colors hover:bg-[#4b42ee]"
-              >
-                Get Started
-              </Link>
+              {session?.user ?
+                <>
+                  <span className="text-white">Welcome, {session.user.name}</span>
+                  <Button
+                    onClick={handleSignOut}
+                    className="inline-flex h-12 items-center justify-center rounded-xl bg-white px-6 text-[17px] font-semibold text-[#5c53fe] transition-colors hover:bg-white/85"
+                  >
+                    Sign Out
+                  </Button>
+                </>
+                : <>
+                  <Link
+                    href="/sign-in"
+                    className="inline-flex h-12 items-center justify-center rounded-xl bg-white px-6 text-[17px] font-semibold text-[#5c53fe] transition-colors hover:bg-white/85"
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    href="/sign-up"
+                    className="inline-flex h-12 items-center justify-center rounded-xl bg-[#5c53fe] px-6 text-[17px] font-semibold text-white transition-colors hover:bg-[#4b42ee]"
+                  >
+                    Get Started
+                  </Link>
+                </>}
             </div>
+
           </div>
 
           <Button
